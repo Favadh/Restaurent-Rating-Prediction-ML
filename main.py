@@ -2,8 +2,9 @@ import os
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.preprocessing import LabelEncoder
 
 # first of all we need to remove missing values rows, because ML hates missing values while
 # supervised(Labelled) learning, and that's why we analyse and delete the those rows usingdropna().
@@ -25,7 +26,32 @@ print("\n", df.shape)   # to check the number of rows and columns in the Dataset
 
 # Now we have a clean dataset without missing values, we can split the data into training and testing sets using train_test_split() function from sklearn library.
 
-features = ["Votes", "Price range", "Average Cost for two"] # selecting needed columns for training
+df["Has Table booking"] = df["Has Table booking"].map({
+    "No": 0,
+    "Yes": 1
+})
+
+df["Has Online delivery"] = df["Has Online delivery"].map({
+    "No": 0,
+    "Yes": 1
+})
+
+city_encoder = LabelEncoder()
+df["City"] = city_encoder.fit_transform(df["City"])
+
+cuisine_encoder = LabelEncoder()
+df["Cuisines"] = cuisine_encoder.fit_transform(df["Cuisines"])
+
+features = [
+    "Votes", 
+    "Price range", 
+    "Average Cost for two",
+    "Has Table booking",
+    "Has Online delivery",
+    "City",
+    "Cuisines"
+    ] # selecting needed columns for training
+
 
 X = df[features]    # Inputs
 y = df["Aggregate rating"]    # Output
@@ -37,7 +63,10 @@ X_train, X_test, y_train, y_test = train_test_split(
   random_state = 42
 )
 
-model = LinearRegression()   # creating a Linear Regression algorithm based ML model
+model = RandomForestRegressor(
+  n_estimators=100,   # number of trees in the forest
+  random_state=42
+)   # creating a Linear Regression algorithm based ML model
 
 model.fit(X_train, y_train)   # training the model with the training data
 
@@ -45,6 +74,9 @@ predictions = model.predict(X_test)  # making predictions with the testing data
 
 mse = mean_squared_error(y_test, predictions) # measures the predictions error with y_test(actual result)
 r2 = r2_score(y_test, predictions) # Measures how well the model explains the ratings
+
+print("MSE:", mse)
+print("R2:", r2)
 
 # Evaluation:
 if r2 >= 0.8 and mse <= 0.5:
