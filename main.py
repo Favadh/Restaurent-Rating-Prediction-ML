@@ -90,6 +90,17 @@ else:
 
 print("Evaluation:", evaluation)
 
+# Feature Importance
+print("\nFeature Importance:")
+
+for feature, importance in zip(
+    features,
+    model.feature_importances_
+):
+    print(
+        f"{feature}: {importance:.4f}"
+    )
+
 results = X_test.copy()
 results["Actual Aggregate rating"] = y_test
 results["Predicted Aggregate rating"] = predictions
